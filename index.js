@@ -1,11 +1,11 @@
 // ========================
 // IMPORTS
 // ========================
-const {
-  Client,
-  GatewayIntentBits,
-  ChannelType,
-  PermissionFlagsBits
+const { 
+  Client, 
+  GatewayIntentBits, 
+  ChannelType, 
+  PermissionFlagsBits 
 } = require("discord.js");
 
 const express = require("express");
@@ -86,7 +86,7 @@ client.on("ready", async () => {
     }
 
     const invites = await guild.invites.fetch();
-    invites.forEach((inv) => inviteUses.set(inv.code, inv.uses));
+    invites.forEach(inv => inviteUses.set(inv.code, inv.uses));
 
     console.log("Cached existing invites.");
   } catch (err) {
@@ -102,21 +102,35 @@ client.on("guildMemberAdd", async (member) => {
     const guild = member.guild;
     const newInvites = await guild.invites.fetch();
 
-    const usedInvite = newInvites.find((inv) => {
+    // Try to detect which invite was used
+    let usedInvite = null;
+
+    newInvites.forEach(inv => {
       const prev = inviteUses.get(inv.code) || 0;
-      return inv.uses > prev;
+      if (inv.uses > prev) {
+        usedInvite = inv;
+      }
+      inviteUses.set(inv.code, inv.uses);
     });
 
-    newInvites.forEach((inv) => inviteUses.set(inv.code, inv.uses));
+    let firstname;
 
-    if (!usedInvite) {
-      console.log(`⚠ Could not find invite for ${member.user.tag}`);
-      return;
+    if (usedInvite) {
+      const inviteCode = usedInvite.code;
+      firstname = inviteMap.get(inviteCode);
+
+      if (!firstname) {
+        console.log(`⚠ No firstname mapped for invite ${inviteCode}, falling back to displayName.`);
+        firstname = member.displayName || member.user.username || "Client";
+      } else {
+        console.log(`Invite ${usedInvite.code} matched to firstname: ${firstname}`);
+      }
+    } else {
+      console.log(`⚠ Could not find used invite for ${member.user.tag}, falling back to displayName.`);
+      firstname = member.displayName || member.user.username || "Client";
     }
 
-    const inviteCode = usedInvite.code;
-    const firstname = inviteMap.get(inviteCode) || member.displayName;
-
+    firstname = firstname.trim();
     console.log(`Creating channels for: ${firstname}`);
 
     const categoryName = `${firstname} - Echo Growth`;
@@ -149,9 +163,8 @@ client.on("guildMemberAdd", async (member) => {
     await category.permissionOverwrites.set(overwrites);
 
     // ========================
-    // CHANNEL TEMPLATE
+    // CHANNEL TEMPLATE (ORDERED)
     // ========================
-    // Exact order you wanted, with "name" to be replaced by client's firstname
     const channelNames = [
       "🤝│team-chat",
       "🧲│new-leads-name",
@@ -163,15 +176,9 @@ client.on("guildMemberAdd", async (member) => {
       "🗂│swipe-vault"
     ];
 
-    // Slugified version of firstname for channel names (lowercase, dashes)
-    const safeFirst =
-      firstname && typeof firstname === "string"
-        ? firstname.toLowerCase().replace(/\s+/g, "-")
-        : "client";
-
-    for (const name of channelNames) {
-      // Replace the literal word "name" with the client's name slug
-      const finalName = name.replace("name", safeFirst);
+    for (let name of channelNames) {
+      // Replace the literal word "name" with the client's firstname (lowercased)
+      const finalName = name.replace("name", firstname.toLowerCase());
 
       await guild.channels.create({
         name: finalName,
