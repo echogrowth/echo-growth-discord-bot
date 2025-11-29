@@ -1,11 +1,11 @@
 // ========================
 // IMPORTS
 // ========================
-const { 
-  Client, 
-  GatewayIntentBits, 
-  ChannelType, 
-  PermissionFlagsBits 
+const {
+  Client,
+  GatewayIntentBits,
+  ChannelType,
+  PermissionFlagsBits
 } = require("discord.js");
 
 const express = require("express");
@@ -86,7 +86,7 @@ client.on("ready", async () => {
     }
 
     const invites = await guild.invites.fetch();
-    invites.forEach(inv => inviteUses.set(inv.code, inv.uses));
+    invites.forEach((inv) => inviteUses.set(inv.code, inv.uses));
 
     console.log("Cached existing invites.");
   } catch (err) {
@@ -102,12 +102,12 @@ client.on("guildMemberAdd", async (member) => {
     const guild = member.guild;
     const newInvites = await guild.invites.fetch();
 
-    const usedInvite = newInvites.find(inv => {
+    const usedInvite = newInvites.find((inv) => {
       const prev = inviteUses.get(inv.code) || 0;
       return inv.uses > prev;
     });
 
-    newInvites.forEach(inv => inviteUses.set(inv.code, inv.uses));
+    newInvites.forEach((inv) => inviteUses.set(inv.code, inv.uses));
 
     if (!usedInvite) {
       console.log(`⚠ Could not find invite for ${member.user.tag}`);
@@ -148,12 +148,33 @@ client.on("guildMemberAdd", async (member) => {
 
     await category.permissionOverwrites.set(overwrites);
 
-    // Create 3 channels
-    const channelNames = ["team-chat", "resources", "support"];
+    // ========================
+    // CHANNEL TEMPLATE
+    // ========================
+    // Exact order you wanted, with "name" to be replaced by client's firstname
+    const channelNames = [
+      "🤝│team-chat",
+      "🧲│new-leads-name",
+      "ℹ️│typeform-name",
+      "🗓│new-calls-name",
+      "📈│performance-intelligence",
+      "📊│ad-intelligence",
+      "🧬│funnel-diagnostics",
+      "🗂│swipe-vault"
+    ];
+
+    // Slugified version of firstname for channel names (lowercase, dashes)
+    const safeFirst =
+      firstname && typeof firstname === "string"
+        ? firstname.toLowerCase().replace(/\s+/g, "-")
+        : "client";
 
     for (const name of channelNames) {
+      // Replace the literal word "name" with the client's name slug
+      const finalName = name.replace("name", safeFirst);
+
       await guild.channels.create({
-        name,
+        name: finalName,
         type: ChannelType.GuildText,
         parent: category.id
       });
