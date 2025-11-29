@@ -1,0 +1,13 @@
+{
+  "name": "echo-growth-discord-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for automatic client category creation",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "express": "^4.19.2"
+  }
+}
