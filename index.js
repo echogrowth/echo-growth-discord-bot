@@ -53,9 +53,21 @@ client.once("ready", async () => {
   console.log(`Logged in as ${client.user.tag}`);
 
   try {
-    const guild = await client.guilds.fetch(GUILD_ID);
-    const invites = await guild.invites.fetch();
+    // Try to get the guild either by ID (preferred) or just take the first one
+    let guild;
 
+    if (GUILD_ID) {
+      guild = await client.guilds.fetch(GUILD_ID);
+    } else {
+      guild = client.guilds.cache.first();
+    }
+
+    if (!guild) {
+      console.log("No guild found to cache invites for. Skipping invite cache.");
+      return;
+    }
+
+    const invites = await guild.invites.fetch();
     invites.forEach(inv => inviteUses.set(inv.code, inv.uses));
     console.log("Cached existing invites");
   } catch (err) {
