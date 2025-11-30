@@ -23,6 +23,9 @@ const CSM_ROLE_ID = process.env.CSM_ROLE_ID || null;
 const FULFILMENT_ROLE_ID = process.env.FULFILMENT_ROLE_ID || null;
 const OPERATIONS_ROLE_ID = process.env.OPERATIONS_ROLE_ID || null;
 
+// Optional: #start-here channel ID for mention
+const START_HERE_CHANNEL_ID = process.env.START_HERE_CHANNEL_ID || null;
+
 // ========================
 // EXPRESS SERVER FOR ZAPIER
 // ========================
@@ -209,6 +212,7 @@ client.on("guildMemberAdd", async (member) => {
       const csmMention = CSM_ROLE_ID ? `<@&${CSM_ROLE_ID}>` : "Client Success Manager";
       const fulfilmentMention = FULFILMENT_ROLE_ID ? `<@&${FULFILMENT_ROLE_ID}>` : "Fulfilment Manager";
       const opsMention = OPERATIONS_ROLE_ID ? `<@&${OPERATIONS_ROLE_ID}>` : "Operations Manager";
+      const startHereMention = START_HERE_CHANNEL_ID ? `<#${START_HERE_CHANNEL_ID}>` : "#start-here";
 
       const onboardingMessage = `
 ✨ **Welcome to Echo Growth!**
@@ -229,10 +233,10 @@ ${csmMention} – **Client Success Manager**
 Your CSMs, Oliver and Leo, are here to support you day-to-day. Anytime you need clarity, direction, or help getting unstuck, they’ve got you. They’ll walk you through each step, keep everything moving, and support you with campaign decisions.
 
 ${fulfilmentMention} – **Fulfilment Manager**  
-Alex oversees all the “building” work — your scripts, ads, funnel, creative… everything. He makes sure whatever we launch is tight, polished, and high-quality.
+Alex oversees all the “building” work, your scripts, ads, funnel, creative… everything. He makes sure whatever we launch is tight, polished, and high-quality.
 
 ${opsMention} – **Operations Manager**  
-Anton keeps the entire engine running smoothly behind the scenes, making your onboarding and fulfillment process feel seamless.
+Anton keeps the entire engine running smoothly behind the scenes, making your onboarding and fulfillment feel seamless.
 
 **Our Creative & Tech Team**  
 These are the people handling editing, building, automations, and ongoing optimisation. You might not always see them, but you’ll definitely feel their work.
@@ -241,6 +245,9 @@ These are the people handling editing, building, automations, and ongoing optimi
 
 You’ve got a full team backing you now.  
 Ask questions anytime, drop updates as you go, and use this Discord as your direct line to us.
+
+Now let’s get started.  
+Head over to ${startHereMention} and complete your intake form — this gives us everything we need to prep for your next call and hit the ground running.
 
 We’re really looking forward to growing with you. 🚀
       `.trim();
