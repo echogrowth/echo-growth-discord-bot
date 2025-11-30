@@ -17,15 +17,15 @@ const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID || null;
 const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID || null;
 
-// Optional: individual user IDs for mentions in welcome message
-const FOUNDER_USER_ID = process.env.FOUNDER_USER_ID || null;        // @echogrowth
-const CSM1_USER_ID = process.env.CSM1_USER_ID || null;              // @odlyons
-const CSM2_USER_ID = process.env.CSM2_USER_ID || null;              // @leovumanskiy1_62675
-const FULFILMENT_USER_ID = process.env.FULFILMENT_USER_ID || null;  // @alexgrahamm
-const OPERATIONS_USER_ID = process.env.OPERATIONS_USER_ID || null;  // @anton_9808
+// Individual user IDs for mentions in welcome message
+const FOUNDER_USER_ID = process.env.FOUNDER_USER_ID || "1361785718900396315";
+const CSM1_USER_ID = process.env.CSM1_USER_ID || "1018939468763373589";
+const CSM2_USER_ID = process.env.CSM2_USER_ID || "1322178805359706213";
+const FULFILMENT_USER_ID = process.env.FULFILMENT_USER_ID || "1394372856128733305";
+const OPERATIONS_USER_ID = process.env.OPERATIONS_USER_ID || "775132202022600724";
 
-// Optional: #start-here channel ID for mention
-const START_HERE_CHANNEL_ID = process.env.START_HERE_CHANNEL_ID || null;
+// Hardcoded start-here channel ID (clickable)
+const START_HERE_CHANNEL = "<#1431246046041997344>";
 
 // ========================
 // EXPRESS SERVER FOR ZAPIER
@@ -76,7 +76,7 @@ const client = new Client({
 const inviteUses = new Map();
 
 // ========================
-// READY EVENT (v14 SAFE)
+// READY EVENT
 // ========================
 client.on("ready", async () => {
   console.log(`Logged in as ${client.user.tag}`);
@@ -112,7 +112,6 @@ client.on("guildMemberAdd", async (member) => {
     const guild = member.guild;
     const newInvites = await guild.invites.fetch();
 
-    // Try to detect which invite was used
     let usedInvite = null;
 
     newInvites.forEach(inv => {
@@ -130,13 +129,13 @@ client.on("guildMemberAdd", async (member) => {
       firstname = inviteMap.get(inviteCode);
 
       if (!firstname) {
-        console.log(`⚠ No firstname mapped for invite ${inviteCode}, falling back to displayName.`);
+        console.log(`⚠ No firstname mapped for invite ${inviteCode}, fallback to displayName.`);
         firstname = member.displayName || member.user.username || "Client";
       } else {
         console.log(`Invite ${usedInvite.code} matched to firstname: ${firstname}`);
       }
     } else {
-      console.log(`⚠ Could not find used invite for ${member.user.tag}, falling back to displayName.`);
+      console.log(`⚠ No used invite found for ${member.user.tag}.`);
       firstname = member.displayName || member.user.username || "Client";
     }
 
@@ -151,7 +150,7 @@ client.on("guildMemberAdd", async (member) => {
       type: ChannelType.GuildCategory
     });
 
-    // Permission rules
+    // Permissions
     const overwrites = [
       {
         id: guild.roles.everyone.id,
@@ -160,14 +159,13 @@ client.on("guildMemberAdd", async (member) => {
       {
         id: member.id,
         allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages]
+      },
+      // Allow the bot itself
+      {
+        id: client.user.id,
+        allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages]
       }
     ];
-
-    // ✅ Explicitly allow the bot itself so it can see/send in these channels
-    overwrites.push({
-      id: client.user.id,
-      allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages]
-    });
 
     if (STAFF_ROLE_ID) {
       overwrites.push({
@@ -179,8 +177,8 @@ client.on("guildMemberAdd", async (member) => {
     await category.permissionOverwrites.set(overwrites);
 
     // ========================
-    // CHANNEL TEMPLATE (ORDERED)
-// ========================
+    // CHANNEL TEMPLATE 
+    // ========================
     const channelNames = [
       "🤝│team-chat",
       "🧲│new-leads-name",
@@ -195,7 +193,6 @@ client.on("guildMemberAdd", async (member) => {
     let teamChatChannel = null;
 
     for (let name of channelNames) {
-      // Replace the literal word "name" with the client's firstname (lowercased)
       const finalName = name.replace("name", firstname.toLowerCase());
 
       const createdChannel = await guild.channels.create({
@@ -209,29 +206,23 @@ client.on("guildMemberAdd", async (member) => {
       }
     }
 
-// ========================
-// SEND ONBOARDING MESSAGE (SPLIT INTO 2 MESSAGES EXACTLY AS REQUESTED)
-// ========================
-if (teamChatChannel) {
+    // ========================
+    // SEND ONBOARDING MESSAGES
+    // ========================
+    if (teamChatChannel) {
+      const clientMention = `<@${member.id}>`;
 
-  const clientMention = `<@${member.id}>`;
+      const founderMention = `<@${FOUNDER_USER_ID}>`;
+      const csm1Mention = `<@${CSM1_USER_ID}>`;
+      const csm2Mention = `<@${CSM2_USER_ID}>`;
+      const fulfilmentMention = `<@${FULFILMENT_USER_ID}>`;
+      const opsMention = `<@${OPERATIONS_USER_ID}>`;
 
-  const founderMention = FOUNDER_USER_ID ? `<@${FOUNDER_USER_ID}>` : "@echogrowth";
-  const csm1Mention = CSM1_USER_ID ? `<@${CSM1_USER_ID}>` : "@odlyons";
-  const csm2Mention = CSM2_USER_ID ? `<@${CSM2_USER_ID}>` : "@leovumanskiy1_62675";
-  const fulfilmentMention = FULFILMENT_USER_ID ? `<@${FULFILMENT_USER_ID}>` : "@alexgrahamm";
-  const opsMention = OPERATIONS_USER_ID ? `<@${OPERATIONS_USER_ID}>` : "@anton_9808";
-
-  const startHereMention = START_HERE_CHANNEL_ID ? `<#${START_HERE_CHANNEL_ID}>` : "#📍│start-here";
-
-  // -------------------------
-  // MESSAGE 1 (FULL TEAM SECTION)
-  // -------------------------
-  const onboardingPart1 = `
+      const onboardingPart1 = `
 ✨ **Welcome to Echo Growth!**
 
 Hey ${clientMention}! We’re genuinely excited to have you here.
-By joining this community, you’ve partnered with a team that’s fully committed to helping you scale your agency, coaching, or consulting business, faster, smoother, and with way less stress.
+By joining this community, you’ve partnered with a team that’s fully committed to helping you scale your agency, coaching, or consulting business — faster, smoother, and with way less stress.
 
 From here on out, we’ll be working alongside you to fine-tune your offer, build your ads and funnel, set up the right automations, and launch campaigns that actually move the needle. You’re not just working with an agency — you’ve got a real growth partner in your corner.
 
@@ -240,39 +231,36 @@ From here on out, we’ll be working alongside you to fine-tune your offer, buil
 👥 **Meet Your Team**
 
 ${founderMention} – **Founder**  
-I’ll be guiding your overall strategy, shaping your offer, and helping you scale. Think of me as your go-to for anything big-picture.
+I’ll be guiding your overall strategy, shaping your offer, and helping you scale.
 
 ${csm1Mention} and ${csm2Mention} – **Client Success Managers**  
-Your CSMs, Oliver and Leo, are here to support you day-to-day. Anytime you need clarity, direction, or help getting unstuck, they’ve got you. They’ll walk you through each step, keep everything moving, and support you with campaign decisions.
+Oliver and Leo support you day-to-day. Anytime you need clarity or direction, they’ve got you.
 
 ${fulfilmentMention} – **Fulfilment Manager**  
-Alex oversees all the building work — your scripts, ads, funnel, creative… everything. He makes sure whatever we launch is tight, polished, and high-quality.
+Alex oversees scripts, ads, funnels, creative — ensuring everything is high-quality.
 
 ${opsMention} – **Operations Manager**  
-Anton keeps the entire engine running smoothly behind the scenes, making your onboarding and fulfillment feel seamless.
+Anton makes sure the onboarding and fulfillment process feels seamless.
 
 **Our Creative & Tech Team**  
-These are the people handling editing, building, automations, and ongoing optimisation. You might not always see them, but you’ll definitely feel their work.
-  `.trim();
+The people behind editing, building, automations, and optimisation.
+      `.trim();
 
-  // -------------------------
-  // MESSAGE 2 (CLOSING + START HERE)
-  // -------------------------
-  const onboardingPart2 = `
+      const onboardingPart2 = `
 ⸻
 
 You’ve got a full team backing you now.  
 Ask questions anytime, drop updates as you go, and use this Discord as your direct line to us.
 
 Now let’s get started.  
-Head over to ${startHereMention} and complete your intake form — this gives us everything we need to prep for your next call and hit the ground running.
+Head over to ${START_HERE_CHANNEL} and complete your intake form — this gives us everything we need to prep for your next call and hit the ground running.
 
 We’re really looking forward to growing with you. 🚀
-  `.trim();
+      `.trim();
 
-  await teamChatChannel.send(onboardingPart1);
-  await teamChatChannel.send(onboardingPart2);
-}
+      await teamChatChannel.send(onboardingPart1);
+      await teamChatChannel.send(onboardingPart2);
+    }
 
     console.log(`Created category + channels for ${firstname}`);
   } catch (err) {
