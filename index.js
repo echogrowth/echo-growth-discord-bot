@@ -17,11 +17,12 @@ const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID || null;
 const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID || null;
 
-// Optional: role IDs for mentions in welcome message
-const FOUNDER_ROLE_ID = process.env.FOUNDER_ROLE_ID || null;
-const CSM_ROLE_ID = process.env.CSM_ROLE_ID || null;
-const FULFILMENT_ROLE_ID = process.env.FULFILMENT_ROLE_ID || null;
-const OPERATIONS_ROLE_ID = process.env.OPERATIONS_ROLE_ID || null;
+// Optional: individual user IDs for mentions in welcome message
+const FOUNDER_USER_ID = process.env.FOUNDER_USER_ID || null;        // @echogrowth
+const CSM1_USER_ID = process.env.CSM1_USER_ID || null;              // @odlyons
+const CSM2_USER_ID = process.env.CSM2_USER_ID || null;              // @leovumanskiy1_62675
+const FULFILMENT_USER_ID = process.env.FULFILMENT_USER_ID || null;  // @alexgrahamm
+const OPERATIONS_USER_ID = process.env.OPERATIONS_USER_ID || null;  // @anton_9808
 
 // Optional: #start-here channel ID for mention
 const START_HERE_CHANNEL_ID = process.env.START_HERE_CHANNEL_ID || null;
@@ -179,7 +180,7 @@ client.on("guildMemberAdd", async (member) => {
 
     // ========================
     // CHANNEL TEMPLATE (ORDERED)
-    // ========================
+// ========================
     const channelNames = [
       "🤝│team-chat",
       "🧲│new-leads-name",
@@ -212,18 +213,23 @@ client.on("guildMemberAdd", async (member) => {
     // SEND ONBOARDING MESSAGE
     // ========================
     if (teamChatChannel) {
-      const discordName = member.displayName || member.user.username || firstname;
+      // Proper mention for the client
+      const clientMention = `<@${member.id}>`;
 
-      const founderMention = FOUNDER_ROLE_ID ? `<@&${FOUNDER_ROLE_ID}>` : "Founder";
-      const csmMention = CSM_ROLE_ID ? `<@&${CSM_ROLE_ID}>` : "Client Success Manager";
-      const fulfilmentMention = FULFILMENT_ROLE_ID ? `<@&${FULFILMENT_ROLE_ID}>` : "Fulfilment Manager";
-      const opsMention = OPERATIONS_ROLE_ID ? `<@&${OPERATIONS_ROLE_ID}>` : "Operations Manager";
-      const startHereMention = START_HERE_CHANNEL_ID ? `<#${START_HERE_CHANNEL_ID}>` : "#start-here";
+      // Proper mentions for each specific team member (fallback to plain text if env var missing)
+      const founderMention = FOUNDER_USER_ID ? `<@${FOUNDER_USER_ID}>` : "@echogrowth";
+      const csm1Mention = CSM1_USER_ID ? `<@${CSM1_USER_ID}>` : "@odlyons";
+      const csm2Mention = CSM2_USER_ID ? `<@${CSM2_USER_ID}>` : "@leovumanskiy1_62675";
+      const fulfilmentMention = FULFILMENT_USER_ID ? `<@${FULFILMENT_USER_ID}>` : "@alexgrahamm";
+      const opsMention = OPERATIONS_USER_ID ? `<@${OPERATIONS_USER_ID}>` : "@anton_9808";
+
+      // Channel mention for #📍│start-here
+      const startHereMention = START_HERE_CHANNEL_ID ? `<#${START_HERE_CHANNEL_ID}>` : "#📍│start-here";
 
       const onboardingMessage = `
 ✨ **Welcome to Echo Growth!**
 
-Hey ${discordName}! We’re genuinely excited to have you here.
+Hey ${clientMention}! We’re genuinely excited to have you here.
 By joining this community, you’ve partnered with a team that’s fully committed to helping you scale your agency, coaching, or consulting business, faster, smoother, and with way less stress.
 
 From here on out, we’ll be working alongside you to fine-tune your offer, build your ads and funnel, set up the right automations, and launch campaigns that actually move the needle. You’re not just working with an agency, you’ve got a real growth partner in your corner.
@@ -235,7 +241,7 @@ From here on out, we’ll be working alongside you to fine-tune your offer, buil
 ${founderMention} – **Founder**  
 I’ll be guiding your overall strategy, shaping your offer, and helping you scale. Think of me as your go-to for anything big-picture.
 
-${csmMention} – **Client Success Manager**  
+${csm1Mention} and ${csm2Mention} – **Client Success Managers**  
 Your CSMs, Oliver and Leo, are here to support you day-to-day. Anytime you need clarity, direction, or help getting unstuck, they’ve got you. They’ll walk you through each step, keep everything moving, and support you with campaign decisions.
 
 ${fulfilmentMention} – **Fulfilment Manager**  
