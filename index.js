@@ -17,6 +17,12 @@ const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID || null;
 const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID || null;
 
+// Optional: role IDs for mentions in welcome message
+const FOUNDER_ROLE_ID = process.env.FOUNDER_ROLE_ID || null;
+const CSM_ROLE_ID = process.env.CSM_ROLE_ID || null;
+const FULFILMENT_ROLE_ID = process.env.FULFILMENT_ROLE_ID || null;
+const OPERATIONS_ROLE_ID = process.env.OPERATIONS_ROLE_ID || null;
+
 // ========================
 // EXPRESS SERVER FOR ZAPIER
 // ========================
@@ -176,15 +182,70 @@ client.on("guildMemberAdd", async (member) => {
       "🗂│swipe-vault"
     ];
 
+    let teamChatChannel = null;
+
     for (let name of channelNames) {
       // Replace the literal word "name" with the client's firstname (lowercased)
       const finalName = name.replace("name", firstname.toLowerCase());
 
-      await guild.channels.create({
+      const createdChannel = await guild.channels.create({
         name: finalName,
         type: ChannelType.GuildText,
         parent: category.id
       });
+
+      if (finalName.includes("team-chat")) {
+        teamChatChannel = createdChannel;
+      }
+    }
+
+    // ========================
+    // SEND ONBOARDING MESSAGE
+    // ========================
+    if (teamChatChannel) {
+      const discordName = member.displayName || member.user.username || firstname;
+
+      const founderMention = FOUNDER_ROLE_ID ? `<@&${FOUNDER_ROLE_ID}>` : "Founder";
+      const csmMention = CSM_ROLE_ID ? `<@&${CSM_ROLE_ID}>` : "Client Success Manager";
+      const fulfilmentMention = FULFILMENT_ROLE_ID ? `<@&${FULFILMENT_ROLE_ID}>` : "Fulfilment Manager";
+      const opsMention = OPERATIONS_ROLE_ID ? `<@&${OPERATIONS_ROLE_ID}>` : "Operations Manager";
+
+      const onboardingMessage = `
+✨ **Welcome to Echo Growth!**
+
+Hey ${discordName}! We’re genuinely excited to have you here.
+By joining this community, you’ve partnered with a team that’s fully committed to helping you scale your agency, coaching, or consulting business, faster, smoother, and with way less stress.
+
+From here on out, we’ll be working alongside you to fine-tune your offer, build your ads and funnel, set up the right automations, and launch campaigns that actually move the needle. You’re not just working with an agency, you’ve got a real growth partner in your corner.
+
+⸻
+
+👥 **Meet Your Team**
+
+${founderMention} – **Founder**  
+I’ll be guiding your overall strategy, shaping your offer, and helping you scale. Think of me as your go-to for anything big-picture.
+
+${csmMention} – **Client Success Manager**  
+Your CSMs, Oliver and Leo, are here to support you day-to-day. Anytime you need clarity, direction, or help getting unstuck, they’ve got you. They’ll walk you through each step, keep everything moving, and support you with campaign decisions.
+
+${fulfilmentMention} – **Fulfilment Manager**  
+Alex oversees all the “building” work — your scripts, ads, funnel, creative… everything. He makes sure whatever we launch is tight, polished, and high-quality.
+
+${opsMention} – **Operations Manager**  
+Anton keeps the entire engine running smoothly behind the scenes, making your onboarding and fulfillment process feel seamless.
+
+**Our Creative & Tech Team**  
+These are the people handling editing, building, automations, and ongoing optimisation. You might not always see them, but you’ll definitely feel their work.
+
+⸻
+
+You’ve got a full team backing you now.  
+Ask questions anytime, drop updates as you go, and use this Discord as your direct line to us.
+
+We’re really looking forward to growing with you. 🚀
+      `.trim();
+
+      await teamChatChannel.send(onboardingMessage);
     }
 
     console.log(`Created category + channels for ${firstname}`);
