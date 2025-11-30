@@ -1,11 +1,11 @@
 // ========================
 // IMPORTS
 // ========================
-const { 
-  Client, 
-  GatewayIntentBits, 
-  ChannelType, 
-  PermissionFlagsBits 
+const {
+  Client,
+  GatewayIntentBits,
+  ChannelType,
+  PermissionFlagsBits
 } = require("discord.js");
 
 const express = require("express");
@@ -17,15 +17,18 @@ const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID || null;
 const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID || null;
 
-// Individual user IDs for mentions in welcome message
-const FOUNDER_USER_ID = process.env.FOUNDER_USER_ID || "1361785718900396315";
-const CSM1_USER_ID = process.env.CSM1_USER_ID || "1018939468763373589";
-const CSM2_USER_ID = process.env.CSM2_USER_ID || "1322178805359706213";
-const FULFILMENT_USER_ID = process.env.FULFILMENT_USER_ID || "1394372856128733305";
-const OPERATIONS_USER_ID = process.env.OPERATIONS_USER_ID || "775132202022600724";
+// ========================
+// CONSTANTS – USER & CHANNEL IDS
+// ========================
+// These are your real Discord user IDs
+const FOUNDER_USER_ID = "1361785718900396315";       // Elliott
+const CSM1_USER_ID = "1018939468763373589";          // Ollie
+const CSM2_USER_ID = "1322178805359706213";          // Leo
+const FULFILMENT_USER_ID = "1394372856128733305";    // Alex
+const OPERATIONS_USER_ID = "775132202022600724";     // Anton
 
-// Hardcoded start-here channel ID (clickable)
-const START_HERE_CHANNEL = "<#1431246046041997344>";
+// start-here channel ID (hardcoded clickable channel mention)
+const START_HERE_CHANNEL_ID = "1431246046041997344";
 
 // ========================
 // EXPRESS SERVER FOR ZAPIER
@@ -112,6 +115,7 @@ client.on("guildMemberAdd", async (member) => {
     const guild = member.guild;
     const newInvites = await guild.invites.fetch();
 
+    // Detect which invite was used
     let usedInvite = null;
 
     newInvites.forEach(inv => {
@@ -129,13 +133,13 @@ client.on("guildMemberAdd", async (member) => {
       firstname = inviteMap.get(inviteCode);
 
       if (!firstname) {
-        console.log(`⚠ No firstname mapped for invite ${inviteCode}, fallback to displayName.`);
+        console.log(`⚠ No firstname mapped for invite ${inviteCode}, falling back to displayName.`);
         firstname = member.displayName || member.user.username || "Client";
       } else {
         console.log(`Invite ${usedInvite.code} matched to firstname: ${firstname}`);
       }
     } else {
-      console.log(`⚠ No used invite found for ${member.user.tag}.`);
+      console.log(`⚠ Could not find used invite for ${member.user.tag}, falling back to displayName.`);
       firstname = member.displayName || member.user.username || "Client";
     }
 
@@ -144,13 +148,15 @@ client.on("guildMemberAdd", async (member) => {
 
     const categoryName = `${firstname} - Echo Growth`;
 
-    // Create category
+    // ========================
+    // CREATE CATEGORY
+    // ========================
     const category = await guild.channels.create({
       name: categoryName,
       type: ChannelType.GuildCategory
     });
 
-    // Permissions
+    // Permission rules
     const overwrites = [
       {
         id: guild.roles.everyone.id,
@@ -160,8 +166,8 @@ client.on("guildMemberAdd", async (member) => {
         id: member.id,
         allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages]
       },
-      // Allow the bot itself
       {
+        // allow the bot itself
         id: client.user.id,
         allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages]
       }
@@ -177,7 +183,7 @@ client.on("guildMemberAdd", async (member) => {
     await category.permissionOverwrites.set(overwrites);
 
     // ========================
-    // CHANNEL TEMPLATE 
+    // CREATE CHANNELS
     // ========================
     const channelNames = [
       "🤝│team-chat",
@@ -192,7 +198,7 @@ client.on("guildMemberAdd", async (member) => {
 
     let teamChatChannel = null;
 
-    for (let name of channelNames) {
+    for (const name of channelNames) {
       const finalName = name.replace("name", firstname.toLowerCase());
 
       const createdChannel = await guild.channels.create({
@@ -207,19 +213,20 @@ client.on("guildMemberAdd", async (member) => {
     }
 
     // ========================
-// SEND ONBOARDING MESSAGE (ONE MESSAGE)
-if (teamChatChannel) {
-  const newMemberMention = `<@${member.id}>`;
+    // SEND ONBOARDING MESSAGE (ONE MESSAGE)
+// ========================
+    if (teamChatChannel) {
+      const newMemberMention = `<@${member.id}>`;
 
-  const founder = `<@1361785718900396315>`;
-  const csm1 = `<@1018939468763373589>`;
-  const csm2 = `<@1322178805359706213>`;
-  const fulfilment = `<@1394372856128733305>`;
-  const operations = `<@775132202022600724>`;
-  const startHere = `<#1431246046041997344>`;
+      const founder = `<@${FOUNDER_USER_ID}>`;
+      const csm1 = `<@${CSM1_USER_ID}>`;
+      const csm2 = `<@${CSM2_USER_ID}>`;
+      const fulfilment = `<@${FULFILMENT_USER_ID}>`;
+      const operations = `<@${OPERATIONS_USER_ID}>`;
+      const startHere = `<#${START_HERE_CHANNEL_ID}>`;
 
-  const message = `
-#✨ **Welcome to Echo Growth!**
+      const message = `
+✨ **Welcome to Echo Growth!**
 
 Hey ${newMemberMention}, we’re genuinely excited to have you here.  
 By joining this community, you’ve partnered with a team dedicated to helping you scale your agency, coaching, or consulting business — faster, smoother, and with a lot less stress.
@@ -253,10 +260,16 @@ Ask questions anytime, drop updates as you go, and use this Discord as your dire
 **Next step:** Head over to ${startHere} and complete your intake form — this gives us everything we need to tailor your onboarding and hit the ground running.
 
 We’re really looking forward to growing with you. 🚀
-  `.trim();
+      `.trim();
 
-  await teamChatChannel.send(message);
-}
+      await teamChatChannel.send(message);
+    }
+
+    console.log(`Created category + channels for ${firstname}`);
+  } catch (err) {
+    console.error("Error in guildMemberAdd:", err);
+  }
+});
 
 // ========================
 // LOGIN BOT
