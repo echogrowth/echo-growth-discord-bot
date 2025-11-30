@@ -209,30 +209,31 @@ client.on("guildMemberAdd", async (member) => {
       }
     }
 
-    // ========================
-    // SEND ONBOARDING MESSAGE
-    // ========================
-    if (teamChatChannel) {
-      // Proper mention for the client
-      const clientMention = `<@${member.id}>`;
+// ========================
+// SEND ONBOARDING MESSAGE (SPLIT INTO 2 MESSAGES EXACTLY AS REQUESTED)
+// ========================
+if (teamChatChannel) {
 
-      // Proper mentions for each specific team member (fallback to plain text if env var missing)
-      const founderMention = FOUNDER_USER_ID ? `<@${FOUNDER_USER_ID}>` : "@echogrowth";
-      const csm1Mention = CSM1_USER_ID ? `<@${CSM1_USER_ID}>` : "@odlyons";
-      const csm2Mention = CSM2_USER_ID ? `<@${CSM2_USER_ID}>` : "@leovumanskiy1_62675";
-      const fulfilmentMention = FULFILMENT_USER_ID ? `<@${FULFILMENT_USER_ID}>` : "@alexgrahamm";
-      const opsMention = OPERATIONS_USER_ID ? `<@${OPERATIONS_USER_ID}>` : "@anton_9808";
+  const clientMention = `<@${member.id}>`;
 
-      // Channel mention for #📍│start-here
-      const startHereMention = START_HERE_CHANNEL_ID ? `<#${START_HERE_CHANNEL_ID}>` : "#📍│start-here";
+  const founderMention = FOUNDER_USER_ID ? `<@${FOUNDER_USER_ID}>` : "@echogrowth";
+  const csm1Mention = CSM1_USER_ID ? `<@${CSM1_USER_ID}>` : "@odlyons";
+  const csm2Mention = CSM2_USER_ID ? `<@${CSM2_USER_ID}>` : "@leovumanskiy1_62675";
+  const fulfilmentMention = FULFILMENT_USER_ID ? `<@${FULFILMENT_USER_ID}>` : "@alexgrahamm";
+  const opsMention = OPERATIONS_USER_ID ? `<@${OPERATIONS_USER_ID}>` : "@anton_9808";
 
-      const onboardingMessage = `
+  const startHereMention = START_HERE_CHANNEL_ID ? `<#${START_HERE_CHANNEL_ID}>` : "#📍│start-here";
+
+  // -------------------------
+  // MESSAGE 1 (FULL TEAM SECTION)
+  // -------------------------
+  const onboardingPart1 = `
 ✨ **Welcome to Echo Growth!**
 
 Hey ${clientMention}! We’re genuinely excited to have you here.
 By joining this community, you’ve partnered with a team that’s fully committed to helping you scale your agency, coaching, or consulting business, faster, smoother, and with way less stress.
 
-From here on out, we’ll be working alongside you to fine-tune your offer, build your ads and funnel, set up the right automations, and launch campaigns that actually move the needle. You’re not just working with an agency, you’ve got a real growth partner in your corner.
+From here on out, we’ll be working alongside you to fine-tune your offer, build your ads and funnel, set up the right automations, and launch campaigns that actually move the needle. You’re not just working with an agency — you’ve got a real growth partner in your corner.
 
 ⸻
 
@@ -245,14 +246,19 @@ ${csm1Mention} and ${csm2Mention} – **Client Success Managers**
 Your CSMs, Oliver and Leo, are here to support you day-to-day. Anytime you need clarity, direction, or help getting unstuck, they’ve got you. They’ll walk you through each step, keep everything moving, and support you with campaign decisions.
 
 ${fulfilmentMention} – **Fulfilment Manager**  
-Alex oversees all the “building” work, your scripts, ads, funnel, creative… everything. He makes sure whatever we launch is tight, polished, and high-quality.
+Alex oversees all the building work — your scripts, ads, funnel, creative… everything. He makes sure whatever we launch is tight, polished, and high-quality.
 
 ${opsMention} – **Operations Manager**  
 Anton keeps the entire engine running smoothly behind the scenes, making your onboarding and fulfillment feel seamless.
 
 **Our Creative & Tech Team**  
 These are the people handling editing, building, automations, and ongoing optimisation. You might not always see them, but you’ll definitely feel their work.
+  `.trim();
 
+  // -------------------------
+  // MESSAGE 2 (CLOSING + START HERE)
+  // -------------------------
+  const onboardingPart2 = `
 ⸻
 
 You’ve got a full team backing you now.  
@@ -262,10 +268,11 @@ Now let’s get started.
 Head over to ${startHereMention} and complete your intake form — this gives us everything we need to prep for your next call and hit the ground running.
 
 We’re really looking forward to growing with you. 🚀
-      `.trim();
+  `.trim();
 
-      await teamChatChannel.send(onboardingMessage);
-    }
+  await teamChatChannel.send(onboardingPart1);
+  await teamChatChannel.send(onboardingPart2);
+}
 
     console.log(`Created category + channels for ${firstname}`);
   } catch (err) {
