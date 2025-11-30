@@ -162,6 +162,12 @@ client.on("guildMemberAdd", async (member) => {
       }
     ];
 
+    // ✅ Explicitly allow the bot itself so it can see/send in these channels
+    overwrites.push({
+      id: client.user.id,
+      allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages]
+    });
+
     if (STAFF_ROLE_ID) {
       overwrites.push({
         id: STAFF_ROLE_ID,
