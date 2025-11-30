@@ -207,66 +207,56 @@ client.on("guildMemberAdd", async (member) => {
     }
 
     // ========================
-    // SEND ONBOARDING MESSAGES
-    // ========================
-    if (teamChatChannel) {
-      const clientMention = `<@${member.id}>`;
+// SEND ONBOARDING MESSAGE (ONE MESSAGE)
+if (teamChatChannel) {
+  const newMemberMention = `<@${member.id}>`;
 
-      const founderMention = `<@${FOUNDER_USER_ID}>`;
-      const csm1Mention = `<@${CSM1_USER_ID}>`;
-      const csm2Mention = `<@${CSM2_USER_ID}>`;
-      const fulfilmentMention = `<@${FULFILMENT_USER_ID}>`;
-      const opsMention = `<@${OPERATIONS_USER_ID}>`;
+  const founder = `<@1361785718900396315>`;
+  const csm1 = `<@1018939468763373589>`;
+  const csm2 = `<@1322178805359706213>`;
+  const fulfilment = `<@1394372856128733305>`;
+  const operations = `<@775132202022600724>`;
+  const startHere = `<#1431246046041997344>`;
 
-      const onboardingPart1 = `
-✨ **Welcome to Echo Growth!**
+  const message = `
+#✨ **Welcome to Echo Growth!**
 
-Hey ${clientMention}! We’re genuinely excited to have you here.
-By joining this community, you’ve partnered with a team that’s fully committed to helping you scale your agency, coaching, or consulting business — faster, smoother, and with way less stress.
+Hey ${newMemberMention}, we’re genuinely excited to have you here.  
+By joining this community, you’ve partnered with a team dedicated to helping you scale your agency, coaching, or consulting business — faster, smoother, and with a lot less stress.
 
-From here on out, we’ll be working alongside you to fine-tune your offer, build your ads and funnel, set up the right automations, and launch campaigns that actually move the needle. You’re not just working with an agency — you’ve got a real growth partner in your corner.
+From here on out, we’ll work with you to refine your offer, build your ads and funnel, set up the right automations, and launch campaigns that actually move the needle. You’re not just working with an agency — you’ve got a real growth partner.
 
 ⸻
 
 👥 **Meet Your Team**
 
-${founderMention} – **Founder**  
-I’ll be guiding your overall strategy, shaping your offer, and helping you scale.
+${founder} – **Founder**  
+Guides your strategy, offer, and overall growth direction.
 
-${csm1Mention} and ${csm2Mention} – **Client Success Managers**  
-Oliver and Leo support you day-to-day. Anytime you need clarity or direction, they’ve got you.
+${csm1} & ${csm2} – **Client Success Managers**  
+Your day-to-day support. If you need clarity, direction, or help getting unstuck, they’ve got you.
 
-${fulfilmentMention} – **Fulfilment Manager**  
-Alex oversees scripts, ads, funnels, creative — ensuring everything is high-quality.
+${fulfilment} – **Fulfilment Manager**  
+Oversees scripts, ads, funnels, and creative to ensure everything we launch is high-quality.
 
-${opsMention} – **Operations Manager**  
-Anton makes sure the onboarding and fulfillment process feels seamless.
+${operations} – **Operations Manager**  
+Keeps the entire process running smoothly so onboarding and fulfilment feel seamless.
 
-**Our Creative & Tech Team**  
-The people behind editing, building, automations, and optimisation.
-      `.trim();
+**Creative & Tech Team**  
+Handles editing, building, automations, optimisation, and all behind-the-scenes execution.
 
-      const onboardingPart2 = `
 ⸻
 
-You’ve got a full team backing you now.  
+You’ve now got a full team backing you.  
 Ask questions anytime, drop updates as you go, and use this Discord as your direct line to us.
 
-Now let’s get started.  
-Head over to ${START_HERE_CHANNEL} and complete your intake form — this gives us everything we need to prep for your next call and hit the ground running.
+**Next step:** Head over to ${startHere} and complete your intake form — this gives us everything we need to tailor your onboarding and hit the ground running.
 
 We’re really looking forward to growing with you. 🚀
-      `.trim();
+  `.trim();
 
-      await teamChatChannel.send(onboardingPart1);
-      await teamChatChannel.send(onboardingPart2);
-    }
-
-    console.log(`Created category + channels for ${firstname}`);
-  } catch (err) {
-    console.error("Error in guildMemberAdd:", err);
-  }
-});
+  await teamChatChannel.send(message);
+}
 
 // ========================
 // LOGIN BOT
